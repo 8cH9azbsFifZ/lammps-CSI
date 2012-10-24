@@ -1,0 +1,43 @@
+# g++ = RedHat Linux box, g++, MPICH, FFTW
+
+SHELL = /bin/bash
+#.IGNORE:
+
+# System-specific settings
+MPI_PATH=/usr/mpi/gcc/mvapich-0.9.9
+
+CC =		$(MPI_PATH)/bin/mpicxx
+CCFLAGS =	-g -O -I$(MPI_PATH)/include -DFFT_NONE -DLAMMPS_GZIP #-DOMPI_SKIP_MPICXX -DMPICH_IGNORE_CXX_SEEK
+				#-I$(MPI_PATH)/include/openmpi/ompi/mpi/cxx -DFFT_NONE -DMPICH_IGNORE_CXX_SEEK
+DEPFLAGS =	-M
+LINK =		$(MPI_PATH)/bin/mpicxx
+LINKFLAGS =	-g -O -L$(MPI_PATH)/lib/linux_amd64
+USRLIB =	-lmpich -lpthread
+SYSLIB =
+ARCHIVE =	ar
+ARFLAGS =	-rc
+SIZE =		size
+
+# Link target
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(OBJ) $(USRLIB) $(SYSLIB) -o $(EXE)
+	$(SIZE) $(EXE)
+
+# Library target
+
+lib:	$(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+include $(DEPENDS)

@@ -1,0 +1,44 @@
+# g++ = RedHat Linux box, g++, MPICH, FFTW
+
+SHELL = /bin/bash
+#.IGNORE:
+
+# System-specific settings
+#MPI_PATH=/opt/mpich/ch-p4/
+MPI_PATH=/usr/lib/mpich/
+
+
+CC =		g++-4.1
+CCFLAGS =	-g -O -I$(MPI_PATH)/include -DFFT_NONE
+DEPFLAGS =	-M
+LINK =		g++-4.1
+LINKFLAGS =	-g -O -L$(MPI_PATH)/lib 
+USRLIB =	-lmpich 
+SYSLIB =
+ARCHIVE =	ar
+ARFLAGS =	-rc
+SIZE =		size
+
+# Link target
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(OBJ) $(USRLIB) $(SYSLIB) -o $(EXE)
+	$(SIZE) $(EXE)
+
+# Library target
+
+lib:	$(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+include $(DEPENDS)

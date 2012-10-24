@@ -1,0 +1,41 @@
+# squall = Red Squall (compile on srnsquall), pgiCC, MPI, FFTW
+#
+# To use this, first do:
+#
+# module unload compilers/gnu
+# module load compilers/pgi-6.0
+# module unload mpich/mpich-gnu
+# module load mpich/mpich-pgi-6.0
+#
+
+SHELL = /bin/sh
+
+# System-specific settings
+
+CC =		mpiCC
+CCFLAGS =       -DFFT_FFTW -I/home/athomps/tools/fftw-2.1.5/fftw
+DEPFLAGS =	-O2 -M
+LINK =		mpiCC
+LINKFLAGS =	-O2 -L/home/athomps/tools/fftw-2.1.5/fftw/.libs 
+USRLIB =	-lfftw -lmpi
+SYSLIB =	
+SIZE =		size
+
+# Link rule
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(OBJ) $(USRLIB) $(SYSLIB) -o $(EXE)
+	$(SIZE) $(EXE)
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+include $(DEPENDS)

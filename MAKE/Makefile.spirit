@@ -1,0 +1,45 @@
+# spirit = HP cluster with dual 3.4 GHz EM64T (64 bit), mpiCC, native MPI, FFTW
+
+# users may wish to add the following (uncommented) to their .bashrc or equivalent: 
+# if [ "$SNLCLUSTER" = "spirit" ]; then
+#   source /opt/modules/default/init/bash
+#   module load libraries/fftw-2.1.5_openmpi-1.2.2_mx_intel-9.1-f040-c045
+# fi;
+
+
+SHELL = /bin/sh
+.IGNORE:
+
+# System-specific settings
+
+FFTW =		/apps/x86_64/libraries/fftw/openmpi-1.2.2_mx_intel-9.1-f040-c045/fftw-2.1.5
+
+CC =		mpicxx
+OPTIMIZE =	-O
+CCFLAGS =	$(OPTIMIZE) -DFFT_FFTW -I$(FFTW)/include
+DEPFLAGS =	-M
+LINK =		mpicxx
+LINKFLAGS =	$(OPTIMIZE) -L$(FFTW)/lib
+USRLIB =	-lfftw -lstdc++
+SYSLIB =	-lm
+SIZE =		size
+
+# Link rule
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(OBJ) $(USRLIB) $(SYSLIB) -o $(EXE)
+	$(SIZE) $(EXE)
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+include $(DEPENDS)
+

@@ -1,0 +1,40 @@
+# serial = RedHat Linux box, g++, no MPI, no FFTs
+
+SHELL = /bin/bash
+
+# System-specific settings
+
+CC =		g++
+CCFLAGS =	-O3 -g -Wno-deprecated -funroll-loops -I../STUBS -DFFT_FFTW -DGZIP
+DEPFLAGS =	-M
+LINK =		g++
+LINKFLAGS =	-O3 -Wno-deprecated -funroll-loops -L../STUBS
+USRLIB =	-lmpi -lfftw
+SYSLIB = 
+ARCHIVE =	ar
+ARFLAGS =	-rc
+SIZE =		size
+
+# Link target
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(OBJ) $(USRLIB) $(SYSLIB) -o $(EXE)
+	$(SIZE) $(EXE)
+
+# Library target
+
+lib:	$(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+include $(DEPENDS)

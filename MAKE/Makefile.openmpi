@@ -1,0 +1,42 @@
+# debian = Debian, g++, MPICH, FFTW
+
+SHELL = /bin/sh
+#.IGNORE:
+
+# System-specific settings
+
+CC =		/mnt/nas1/gerolf/bin/mpicxx
+CCFLAGS =	-g -O -I/mnt/nas1/gerolf/include/openmpi/ -DFFT_FFTW -DLAMMPS_GZIP
+DEPFLAGS =	-M
+LINK =		/mnt/nas1/gerolf/bin/mpicxx
+LINKFLAGS =	-g -O -L/mnt/nas1/gerolf/lib/openmpi/
+USRLIB =	-lfftw  
+#-lompi
+SYSLIB =
+ARCHIVE =	ar
+ARFLAGS =	-rc
+SIZE =		size
+
+# Link target
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(OBJ) $(USRLIB) $(SYSLIB) -o $(EXE)
+	$(SIZE) $(EXE)
+
+# Library target
+
+lib:	$(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+include $(DEPENDS)
